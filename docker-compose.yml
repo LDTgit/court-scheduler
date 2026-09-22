@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres-db:
+    image: postgres:latest
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: legal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 905Tg#3S
+    ports:
+      - "15432:5432" // Computer port 15432 is redirected to 5432 from the container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:

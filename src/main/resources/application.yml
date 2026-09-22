@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: court-scheduler
+
+#    Connection configuration for PostgreSQL database
+  datasource:
+    url: jdbc:postgresql://localhost:15432/legal
+    username: postgres
+    password: 905Tg#3S # Add password
+    driver-class-name: org.postgresql.Driver
+
+#  JPA and Hibernate configuration
+  jpa:
+    hibernate:
+      ddl-auto: update # Hibernate will create or update the tables based on JPA entities
+    show-sql: true  # Show SQL queries in the console
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+#  Preliminary settings for Google Calendar API
+  google:
+    calendar:
+      credentials:
+        file: google-service-account.json
+      id: primary
