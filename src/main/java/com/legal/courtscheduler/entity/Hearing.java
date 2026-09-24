@@ -7,12 +7,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "hearings")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-
 public class Hearing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -4,8 +4,11 @@ import com.legal.courtscheduler.entity.Hearing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Repository
 public interface HearingRepository extends JpaRepository<Hearing, Long> {
-    // Check if a hearing has already been registered
-    boolean existsByHearingUid(String hearingUid);
+    // Find hearings in a timeframe
+    List<Hearing> findByHearingDateTimeBetweenOrderByHearingDateTimeAsc(LocalDateTime start, LocalDateTime end);
 }

@@ -1,25 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="15.0"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.legal.courtscheduler.controller.MainController">
+<?import javafx.scene.layout.BorderPane?>
+
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<BorderPane
+        xmlns="http://javafx.com/javafx/21"
+        xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="com.legal.courtscheduler.controller.MainController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0"/>
     </padding>
 
-    <Label text="Lista Dosarelor Urmărite" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-    <TableView fx:id="caseTable" prefHeight="400.0" prefWidth="600.0">
-        <columns>
-            <TableColumn fx:id="colId" prefWidth="60.0" text="ID"/>
-            <TableColumn fx:id="colCaseNumber" prefWidth="250.0" text="Număr dosar"/>
-            <TableColumn fx:id="colCourtName" prefWidth="270.0" text="Instanță"/>
-        </columns>
-    </TableView>
-</VBox>
+<!--    Calendar Section-->
+    <top>
+        <VBox spacing="5.0">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label style="-fx-font-size: 16px; -fx-font-weight:bold;" text="Următoarele termene de judecată" />
+            <TableView fx:id="upcomingHearingsTable" prefHeight="130.0">
+                <columns>
+                    <TableColumn fx:id="colHearingDate" prefWidth="150.0" text="Data si Ora" />
+                    <TableColumn fx:id="colHearingCaseNum" prefWidth="200.0" text="Număr Dosar" />
+                    <TableColumn fx:id="colHearingCourt" prefWidth="250.0" text="Instanță" />
+                    <TableColumn fx:id="colHearingStage" prefWidth="180.0" text="Stadiu / Obiect" />
+                </columns>
+            </TableView>
+        </VBox>
+    </top>
+
+
+<!--    Left Section: Add court cases and Clients-->
+    <left>
+        <VBox spacing="10.0" prefWidth="360.0" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10;">
+            <BorderPane.margin>
+                <Insets right="15.0"/>
+            </BorderPane.margin>
+            <Label text="Adăugare Dosar Nou" style="-fx-font-weight: bold; -fx-font-size: 13px;"/>
+
+            <VBox spacing="3.0">
+                <Label text="Client:"/>
+                <HBox spacing="15.0">
+                    <RadioButton fx:id="existingClientRadio" text="Client existent" selected="true"/>
+                    <RadioButton fx:id="newClientRadio" text="Client nou"/>
+                </HBox>
+<!--                Existing client section-->
+                <VBox fx:id="existingClientBox" spacing="3.0">
+                    <Label text="Selectează Client:"/>
+                    <ComboBox fx:id="clientComboBox" promptText="Alege clientul..." prefWidth="350.0"/>
+                </VBox>
+
+<!--                Existing Client section-->
+                <VBox fx:id="newClientBox" spacing="5.0" managed="false" visible="false">
+                    <Label text="Nume / Denumire Client nou: "/>
+                    <TextField fx:id="newClientNameField" promptText="Nume sau Denumire Client"/>
+                    <Label text="Număr contract (opțional):"/>
+                    <TextField fx:id="newClientContractField" promptText="Nr. contract..."/>
+                </VBox>
+            </VBox>
+
+            <VBox spacing="3.0">
+                <Label text="Număr dosar:"/>
+                <TextField fx:id="caseNumberField" promptText="Ex. 56870/299/2026"/>
+            </VBox>
+
+            <VBox spacing="3.0">
+                <Label text="Instanță:"/>
+                <ComboBox fx:id="courtComboBox" promptText="Selectează instanța" prefWidth="340.0"/>
+            </VBox>
+
+            <VBox spacing="3.0">
+                <Label text="Mențiuni:"/>
+                <TextField fx:id="notesField" promptText="Note opționale"/>
+            </VBox>
+
+            <CheckBox fx:id="delegationCheckBox" text="Delegația a fost depusă la dosar."/>
+
+            <HBox spacing="10.0">
+                <Button fx:id="saveCaseButton" text="Adaugă dosar" onAction="#handleSaveCase" defaultButton="true" style="-fx-background-color: #2b547e; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </left>
+
+
+<!--Center: Search toggle and Main Table-->
+    <center>
+        <VBox spacing="10.0">
+<!--            Search bar with radio buttons-->
+            <HBox spacing="10.0" alignment="CENTER_LEFT" style="-fx-background-color: #f9f9f9; -fx-padding: 8; -fx-border-color:#ddd;">
+                <Label text="Filtrează după:" style="-fx-font-weight: bold;"/>
+                <RadioButton fx:id="searchByNumberRadio" text="Număr Dosar" selected="true">
+                    <toggleGroup>
+                        <ToggleGroup fx:id="searchToggleGroup"/>
+                    </toggleGroup>
+                </RadioButton>
+                <RadioButton fx:id="searchByClientRadio" text="Denumire Client" toggleGroup="$searchToggleGroup"/>
+
+                <TextField fx:id="searchCaseField" promptText="Introduceți termenul de căutare..." prefWidth="220.0" />
+                <Button text="Caută" onAction="#handleSearch" style="-fx-background-color: #5bc0de; -fx-text-fill: white;"/>
+                <Button text="Resetează" onAction="#handleResetFilter"/>
+            </HBox>
+
+            <TableView fx:id="caseTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colClientName" text="Denumire Client" prefWidth="200.0"/>
+                    <TableColumn fx:id="colCaseNumber" text="Număr Dosar" prefWidth="180.0"/>
+                    <TableColumn fx:id="colCourtName" text="Instanță" prefWidth="240.0"/>
+                    <TableColumn fx:id="colDelegation" text="Delegație" prefWidth="90.0"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+<!--    Bottom Section: Sync with Google Calendar-->
+    <bottom>
+        <HBox alignment="TOP_RIGHT">
+            <BorderPane.margin>
+                <Insets top="10.0" />
+            </BorderPane.margin>
+            <Button text="Sincronizează cu Google Calendar" onAction="#handleSyncGoogleCalendar" style="-fx-background-color: #2e8b57; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

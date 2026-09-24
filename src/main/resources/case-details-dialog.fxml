@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http:/javafx.com/fxml/1" fx:controller="com.legal.courtscheduler.controller.CaseDetailsDialogController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <Label text="Detalii și Modificare Dosar" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10.0" vgap="10.0">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="30.0"/>
+            <ColumnConstraints percentWidth="70.0"/>
+        </columnConstraints>
+
+        <Label text="Număr Dosar:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="caseNumberField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Instanță:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="courtField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Obiect:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="objectField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Stadiu Pocesual:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="stageField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Secție / Departament:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="sectionField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Părți Dosar" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextArea fx:id="partiesArea" prefHeight="60.0" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+        <Label text="Mențiuni:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <TextField fx:id="notesField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <Label text="Delegație depusă" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <CheckBox fx:id="delegationCheckBox" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+        <Button text="Șterge Dosar" onAction="#handleDeleteCase" style="-fx-background-color: #d9534f; -fx-text-fill: white;"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button text="Anulează" onAction="#handleCancel"/>
+        <Button text="Salvează Modificările" onAction="#handleSave" style="-fx-background-color: #2b547e; -fx-text-fill: white;"/>
+    </HBox>
+</VBox>
