@@ -48,11 +48,11 @@ public class TrackedCase {
     private Client client;
 
 //    One-to-Many relationship: one court case can have multiple terms
-    @OneToMany(mappedBy = "trackedCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trackedCase", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<Hearing> hearings;
 
-    @OneToMany(mappedBy = "trackedCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trackedCase", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<CaseParty> partiesList;
 

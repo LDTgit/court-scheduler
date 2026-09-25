@@ -3,6 +3,7 @@ package com.legal.courtscheduler.service;
 import com.legal.courtscheduler.entity.Client;
 import com.legal.courtscheduler.entity.Hearing;
 import com.legal.courtscheduler.entity.TrackedCase;
+import com.legal.courtscheduler.repository.CasePartyRepository;
 import com.legal.courtscheduler.repository.ClientRepository;
 import com.legal.courtscheduler.repository.HearingRepository;
 import com.legal.courtscheduler.repository.TrackedCaseRepository;
@@ -21,6 +22,7 @@ public class TrackedCaseService {
     private final TrackedCaseRepository trackedCaseRepository;
     private final ClientRepository clientRepository;
     private final HearingRepository hearingRepository;
+    private final CasePartyRepository casePartyRepository;
 
     public List<Client> getAllClients(){
         return clientRepository.findAll();
@@ -71,6 +73,8 @@ public class TrackedCaseService {
 
     @Transactional
     public void deleteCascadeWithHearings(TrackedCase trackedCase){
+        casePartyRepository.deleteByTrackedCaseId(trackedCase.getId());
+        hearingRepository.deleteByTrackedCaseId(trackedCase.getId());
         trackedCaseRepository.delete(trackedCase);
     }
 }

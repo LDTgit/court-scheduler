@@ -7,8 +7,8 @@ import com.legal.courtscheduler.repository.CasePartyRepository;
 import com.legal.courtscheduler.repository.HearingRepository;
 import com.legal.courtscheduler.repository.TrackedCaseRepository;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.C;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class JusticeApiService {
 
@@ -36,15 +37,23 @@ public class JusticeApiService {
 
     public void fetchAndPopulateCaseDetails(TrackedCase trackedCase){
         try{
+            // Curățăm numărul dosarului de spații accidentale
+            String cleanCaseNumber = trackedCase.getCaseNumber() != null ? trackedCase.getCaseNumber().trim() : "";
+
+            // Curățăm și adaptăm denumirea instituției pentru a respecta formatul SOAP (fără spații)
+            String rawCourtName = trackedCase.getCourtName() != null ? trackedCase.getCourtName().trim() : "";
+            String institutionCode = rawCourtName.replace(" ", ""); // ex: "Judecatoria SECTORUL 1 BUCURESTI" devine "JudecatoriaSECTORUL1BUCURESTI"
+
 //            SOAP request
             String soapEnvelope = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                     "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
                     "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" " +
                     "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
                     "<soap:Body>" +
-                    "<CautareDosare xmlns=\"http://portalquery.just.ro/\">" +
-                    "<numar>" + trackedCase.getCaseNumber() + "</numar>" +
-                    "</CautareDosare>" +
+                    "<CautareDosare2 xmlns=\"portalquery.just.ro\">" +
+                    "<numarDosar>" + cleanCaseNumber + "</numarDosar>" +
+                    "<institutie>" + institutionCode + "</institutie>" +
+                    "</CautareDosare2>" +
                     "</soap:Body>" +
                     "</soap:Envelope>";
 
@@ -53,13 +62,15 @@ public class JusticeApiService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(SOAP_URL))
                     .header("Content-Type", "text/xml; charset=utf-8")
-                    .header("SOAPAction", "http://portalquery.just.ro/CautareDosare")
+                    .header("SOAPAction", "portalquery.just.ro/CautareDosare2")
                     .POST(HttpRequest.BodyPublishers.ofString(soapEnvelope))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200 && response.body() != null){
+                // Afișează în consolă răspunsul XML brut pentru a inspecta nodul <sedinte>
+                System.out.println("RĂSPUNS XML PRIMIT: " + response.body());
                 parseAndSaveSoapResponse(response.body(), trackedCase);
             } else {
                 setFallbackData(trackedCase);
@@ -83,7 +94,7 @@ public class JusticeApiService {
             trackedCase.setSection(getElementValue(doc, "departament"));
             trackedCase.setStage(getElementValue(doc, "stadiuProcesualNume"));
 
-            String dataRegStr = getElementValue(doc, "dataModificare");
+            String dataRegStr = getElementValue(doc, "data");
             if (dataRegStr != null && !dataRegStr.isEmpty()){
                 trackedCase.setRegistrationDate(parseDateTime(dataRegStr));
             }
@@ -93,9 +104,14 @@ public class JusticeApiService {
                 trackedCase.setLastModifiedDate(parseDateTime(dataModifStr));
             }
 
+            if (trackedCase.getId() != null) {
+                casePartyRepository.deleteByTrackedCaseId(trackedCase.getId());
+            }
+
 //            Extraction of parties
             StringBuilder partiesBuilder = new StringBuilder();
             NodeList partiNodes = doc.getElementsByTagNameNS("*", "DosarParte");
+
             for (int i=0; i<partiNodes.getLength(); i++){
                 Element parteElement = (Element) partiNodes.item(i);
                 String nume = getChildElementValue(parteElement, "nume");
@@ -112,17 +128,21 @@ public class JusticeApiService {
                 }
             }
             trackedCase.setParties(partiesBuilder.toString());
-            trackedCaseRepository.save(trackedCase);
 
 //            Extraction of court dates
-            NodeList sedindeNodes = doc.getElementsByTagNameNS("*", "DosarSedinta");
-            for (int i=0; i<sedindeNodes.getLength(); i++){
-                Element sedintaElement = (Element) sedindeNodes.item(i);
+            NodeList sedinteNodes = doc.getElementsByTagNameNS("*", "DosarSedinta");
+
+            if (trackedCase.getId() != null) {
+                hearingRepository.deleteByTrackedCaseId(trackedCase.getId());
+            }
+
+            for (int i=0; i<sedinteNodes.getLength(); i++){
+                Element sedintaElement = (Element) sedinteNodes.item(i);
                 String dataSedintaStr = getChildElementValue(sedintaElement, "data");
                 String solutie = getChildElementValue(sedintaElement, "solutie");
                 String complet = getChildElementValue(sedintaElement, "complet");
 
-                if (dataSedintaStr != null){
+                if (dataSedintaStr != null && !dataSedintaStr.isEmpty()){
                     Hearing hearing = new Hearing();
                     hearing.setTrackedCase(trackedCase);
                     hearing.setHearingDateTime(parseDateTime(dataSedintaStr));
@@ -134,6 +154,7 @@ public class JusticeApiService {
                     hearingRepository.save(hearing);
                 }
             }
+            trackedCaseRepository.save(trackedCase);
         } catch (Exception e){
             e.printStackTrace();
         }
